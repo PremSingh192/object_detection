@@ -83,7 +83,7 @@ export default function Home() {
         setMyModel((prev) => ({ ...prev, model }));
         return model;
       } catch (error) {
-        throw new Error("Error loading model: " + error.message);
+        console.log("Error loading model: " + error.message);
       }
     };
 
@@ -153,7 +153,7 @@ export default function Home() {
         without_helmet: predictions[0],
         with_helmet: predictions[1],
       });
-      //  console.log("predictions:", predictions);
+       console.log("predictions:", predictions);
       const predictedClassIndex = tf.argMax(predictions).dataSync()[0];
       // Display or handle predictions as needed
       console.log("Predicted Class Index:", predictedClassIndex);

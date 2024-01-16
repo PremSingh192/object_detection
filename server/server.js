@@ -21,12 +21,12 @@ app.get("/",(req,res)=>{
     res.status(201).json({"message":"connected succesfully"})
 })
 
-app.get("/logo",(req,res)=>{
-    res.sendFile(__dirname+"/static/image1.png")
-})
-app.get("/model",(req,res)=>{
-  res.sendFile(__dirname+"/static/model.json")
-})
+// app.get("/logo",(req,res)=>{
+//     res.sendFile(__dirname+"/static/image1.png")
+// })
+// app.get("/model",(req,res)=>{
+//   res.sendFile(__dirname+"/static/model.json")
+// })
 // app.get("/weight",(req,res)=>{
 //   res.send(__dirname+"/static/weights.bin")
 // })
