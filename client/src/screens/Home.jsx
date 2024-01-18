@@ -14,7 +14,7 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showStartButton, setShowStartButton] = useState(true);
   const intervalIdRef = useRef(null);
-  const [webcam, setwebcam] = useState(null);
+  // const [webcam, setwebcam] = useState(null);
   const webcamRef = useRef(null);
   const [imgurl, setimgurl] = useState(null);
   const [modelpredictions, setmodelpredictions] = useState({
@@ -111,17 +111,19 @@ export default function Home() {
       .catch((err) => {
         console.log(err);
       });
+
+      window.requestAnimationFrame(predictImage);
   }, []);
   const capture = async () => {
-    const flip = true; // whether to flip the webcam
+    // whether to flip the webcam
 
     // Initialize the webcam
-    const webcamInstance = new tmImage.Webcam(400, 400, flip);
+    const webcamInstance = new tmImage.Webcam(400, 400, true);
     await webcamInstance.setup();
     await webcamInstance.play();
 
     // Set the webcam instance to the state
-    setwebcam(webcamInstance);
+    webcamRef.current = webcamInstance;
     return webcamInstance;
   };
 
@@ -142,7 +144,7 @@ export default function Home() {
             console.error("Error web cam init: ", err);
           });
       }
-    }, 2000); // Adjust the interval time as needed
+    }, 1000); // Adjust the interval time as needed
 
     setIsProcessing(true);
     setShowStartButton(false);
@@ -177,48 +179,58 @@ export default function Home() {
     try {
       // Check if the model is loaded
 
-      const img = new Image();
+      //const img = new Image();
+     
 
-      const video = webcam.webcam;
+      const video = webcamRef.current.webcam;
       const canvas = document.createElement("canvas");
       canvas.width = video.width;
       canvas.height = video.height;
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      // const dataURL = canvas.toDataURL("image/png");
+      // //  img.src = dataURL;   
+      // const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    
+      const tensor = tf.browser.fromPixels(canvas);
+      const resizedTensor = tf.image.resizeBilinear(tensor, [224, 224]);
+      const preprocessed = resizedTensor.expandDims(0); // Ensure correct dimensions
+      //  //  console.log(tensor)
 
-      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-
+      // console.log(preprocessed)
+      const predictions = await mymodel.model.predict(preprocessed).data();
+console.log(predictions[0],predictions[1])
       // Convert the image data to a data URL
-      const dataURL = canvas.toDataURL("image/png");
-
-      img.src = dataURL;
+      setmodelpredictions({
+        with_helmet: predictions[1],
+        without_helmet: predictions[0],
+      });
       // console.error("Model is not loaded.");
       //  console.log(webcamRef.current.canvas.width)
-      img.onload = () => {
-        async function callme() {
-          const tensor = tf.browser.fromPixels(img);
-          const resizedTensor = tf.image.resizeBilinear(tensor, [224, 224]);
-          const preprocessed = resizedTensor.expandDims(0); // Ensure correct dimensions
-          //  //  console.log(tensor)
+      // img.onload = () => {
+        // async function callme() {
+          
+          
+        //   setimgurl(dataURL);
+      
+          
+        //   return predictions;
+        // }
 
-          // console.log(preprocessed)
-          const predictions = await mymodel.model.predict(preprocessed).data();
-
-          return predictions;
-        }
-
-        callme().then((data) => {
-          console.log(data[0], data[1]);
-          setmodelpredictions({
-            without_helmet: data[1],
-            with_helmet: data[0],
-          })
-        }).catch((err) => {
-          console.log(err);
-        });
+        // callme(img)
+        //   .then((data) => {
+        //     console.log(data[0], data[1]);
+        //     setmodelpredictions({
+        //       without_helmet: data[0],
+        //       with_helmet: data[1],
+        //     });
+        //   })
+        //   .catch((err) => {
+        //     console.log(err);
+        //   });
 
         // Rest of your code
-      };
+      // };
       // const canvas = document.createElement("canvas");
       // const context = canvas.getContext("2d");
 
@@ -273,7 +285,14 @@ export default function Home() {
     <div className="outer">
       <div className="innerbox">
         <div className="inner_video">
-          <Webcam screenshotFormat="image/jpeg" audio={false} mirrored width={720} height={400} />
+          <Webcam
+            screenshotFormat="image/jpeg"
+            audio={false}
+            mirrored
+            width={720}
+            height={400}
+          />
+          {imgurl && <img src={imgurl} />}
         </div>
         <div className="innerbox2">
           {/* {    <div>
@@ -308,13 +327,13 @@ export default function Home() {
           <div className="innerbox2text">
             <span className="innertext">
               with helmet:
-              {modelpredictions.with_helmet.toFixed(5) >= 0.55555
+              {modelpredictions.with_helmet.toFixed(5) >= 0.50000
                 ? modelpredictions.with_helmet.toFixed(5)
                 : "NO"}
             </span>
             <span className="innertext">
               without helmet:
-              {modelpredictions.with_helmet.toFixed(5) <= 0.5555
+              {modelpredictions.with_helmet.toFixed(5) <= 0.50000
                 ? modelpredictions.without_helmet.toFixed(5)
                 : "NO"}
             </span>
