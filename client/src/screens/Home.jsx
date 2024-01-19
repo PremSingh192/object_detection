@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import { Accordion, Card, Button } from 'react-bootstrap';
 //import { Button, Card, Container, Row, Col } from "react-bootstrap";
 import "../assets/images/App.css";
 import * as tf from "@tensorflow/tfjs";
@@ -14,6 +16,15 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [showStartButton, setShowStartButton] = useState(true);
   const intervalIdRef = useRef(null);
+  const [user, setuser] = useState(() => {
+    const access = localStorage.getItem("access_token");
+    if (access) {
+      const user = jwtDecode(access);
+      return user;
+    } else {
+      return null;
+    }
+  });
   // const [webcam, setwebcam] = useState(null);
   const webcamRef = useRef(null);
   const [imgurl, setimgurl] = useState(null);
@@ -82,10 +93,9 @@ export default function Home() {
 
     const loadModel = async () => {
       try {
-        const modelURL =
-          "https://teachablemachine.withgoogle.com/models/hMM_hHyfL/model.json";
-        const metadataURL =
-          "https://teachablemachine.withgoogle.com/models/hMM_hHyfL/metadata.json";
+        const base = process.env.REACT_APP_MODEL_URL;
+        const modelURL = base + "/model.json";
+        const metadataURL = base + "/metadata.json";
         const model = await tmImage.load(modelURL, metadataURL);
         //  const model = await tmImage.load("/model/model.json");
 
@@ -112,7 +122,7 @@ export default function Home() {
         console.log(err);
       });
 
-      window.requestAnimationFrame(predictImage);
+    window.requestAnimationFrame(predictImage);
   }, []);
   const capture = async () => {
     // whether to flip the webcam
@@ -126,7 +136,12 @@ export default function Home() {
     webcamRef.current = webcamInstance;
     return webcamInstance;
   };
+ function handlelogout(){
+  localStorage.removeItem("access_token");
+  return navigate("/login")
+  
 
+ }
   const startProcessing = () => {
     // Set a time interval for making predictions
     intervalIdRef.current = setInterval(() => {
@@ -180,7 +195,6 @@ export default function Home() {
       // Check if the model is loaded
 
       //const img = new Image();
-     
 
       const video = webcamRef.current.webcam;
       const canvas = document.createElement("canvas");
@@ -189,9 +203,9 @@ export default function Home() {
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
       // const dataURL = canvas.toDataURL("image/png");
-      // //  img.src = dataURL;   
+      // //  img.src = dataURL;
       // const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    
+
       const tensor = tf.browser.fromPixels(canvas);
       const resizedTensor = tf.image.resizeBilinear(tensor, [224, 224]);
       const preprocessed = resizedTensor.expandDims(0); // Ensure correct dimensions
@@ -199,37 +213,35 @@ export default function Home() {
 
       // console.log(preprocessed)
       const predictions = await mymodel.model.predict(preprocessed).data();
-console.log(predictions[0],predictions[1])
+      console.log(predictions[0], predictions[1]);
       // Convert the image data to a data URL
       setmodelpredictions({
-        with_helmet: predictions[1],
-        without_helmet: predictions[0],
+        with_helmet: predictions[0],
+        without_helmet: predictions[1],
       });
       // console.error("Model is not loaded.");
       //  console.log(webcamRef.current.canvas.width)
       // img.onload = () => {
-        // async function callme() {
-          
-          
-        //   setimgurl(dataURL);
-      
-          
-        //   return predictions;
-        // }
+      // async function callme() {
 
-        // callme(img)
-        //   .then((data) => {
-        //     console.log(data[0], data[1]);
-        //     setmodelpredictions({
-        //       without_helmet: data[0],
-        //       with_helmet: data[1],
-        //     });
-        //   })
-        //   .catch((err) => {
-        //     console.log(err);
-        //   });
+      //   setimgurl(dataURL);
 
-        // Rest of your code
+      //   return predictions;
+      // }
+
+      // callme(img)
+      //   .then((data) => {
+      //     console.log(data[0], data[1]);
+      //     setmodelpredictions({
+      //       without_helmet: data[0],
+      //       with_helmet: data[1],
+      //     });
+      //   })
+      //   .catch((err) => {
+      //     console.log(err);
+      //   });
+
+      // Rest of your code
       // };
       // const canvas = document.createElement("canvas");
       // const context = canvas.getContext("2d");
@@ -281,9 +293,35 @@ console.log(predictions[0],predictions[1])
   //   callcapture();
   // }
 
-  return (
+  return user && (
     <div className="outer">
+      <div className="box_logout">
+      <Accordion defaultActiveKey="0">
+      <Card>
+         <Card.Header>
+         <Accordion.Header>{user.name}</Accordion.Header>
+            {/* Accordion Section 1 */}
+            {/* Clickable item within the header */}
+            <Accordion.Body>
+          <button onClick={handlelogout}  className="button2">logout</button>
+            </Accordion.Body>
+           
+          
+        </Card.Header>
+        {/* <Accordion.Collapse eventKey="0">
+          <Card.Body> */}
+            {/* Content of Accordion Section 1 */}
+            {/* Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          </Card.Body>
+        </Accordion.Collapse> */} 
+      </Card>
+
+      {/* Add more accordion sections as needed */}
+    </Accordion>
+        
+      </div>
       <div className="innerbox">
+        {/* {user && <h3 style={{color:"#040D12"}}>Welcome {user.name}</h3>} */}
         <div className="inner_video">
           <Webcam
             screenshotFormat="image/jpeg"
@@ -327,13 +365,13 @@ console.log(predictions[0],predictions[1])
           <div className="innerbox2text">
             <span className="innertext">
               with helmet:
-              {modelpredictions.with_helmet.toFixed(5) >= 0.50000
+              {modelpredictions.with_helmet.toFixed(5) >= 0.5
                 ? modelpredictions.with_helmet.toFixed(5)
                 : "NO"}
             </span>
             <span className="innertext">
               without helmet:
-              {modelpredictions.with_helmet.toFixed(5) <= 0.50000
+              {modelpredictions.with_helmet.toFixed(5) <= 0.5
                 ? modelpredictions.without_helmet.toFixed(5)
                 : "NO"}
             </span>
