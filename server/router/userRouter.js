@@ -6,6 +6,22 @@ const userRouter = express.Router();
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 
+
+
+
+const sampleUsers = [
+  {
+    name: "Prem Singh",
+    email: "prem@gmail.com",
+    password: bcrypt.hashSync("123456"),
+  },
+  {
+    name: "Cherish Patel",
+    email: "cherish@gmail.com",
+    password: bcrypt.hashSync("123456"),
+  },
+];
+
 function generateToken(user) {
   return jwt.sign(
     {
@@ -35,18 +51,7 @@ function isAuth  (req, res, next)  {
       res.status(401).send({ message: 'No Token' });
     }
   };
-const sampleUsers = [
-  {
-    name: "Prem Singh",
-    email: "prem@gmail.com",
-    password: bcrypt.hashSync("123456"),
-  },
-  {
-    name: "Cherish Patel",
-    email: "cherish@gmail.com",
-    password: bcrypt.hashSync("123456"),
-  },
-];
+
 userRouter.get("/", (req, res) => {
   console.log("inside user router ");
   res.json({ mesage: `connected to userRouter` });

@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { Accordion, Card, Button } from 'react-bootstrap';
+import { Accordion, Card, Spinner } from "react-bootstrap";
 //import { Button, Card, Container, Row, Col } from "react-bootstrap";
 import "../assets/images/App.css";
 import * as tf from "@tensorflow/tfjs";
 import * as tmImage from "@teachablemachine/image";
 import axios from "axios";
 import Webcam from "react-webcam";
-// import modelPath from "./model.json";
-// import weightPath from "./weights.bin";
+
 export default function Home() {
   const navigate = useNavigate();
   const [mymodel, setMyModel] = useState(null);
@@ -25,45 +24,13 @@ export default function Home() {
       return null;
     }
   });
-  // const [webcam, setwebcam] = useState(null);
+
   const webcamRef = useRef(null);
-  const [imgurl, setimgurl] = useState(null);
+
   const [modelpredictions, setmodelpredictions] = useState({
     without_helmet: 0,
     with_helmet: 0,
   });
-
-  // setInterval(()=>{
-  // capture()
-  // },1500)
-  // const [myimage, setmyimage] = useState("");
-  // const sendImageToBackend = async (imageSrc) => {
-  //   const accesslocal = localStorage.getItem("access_token") || "";
-
-  //   // const formData = new FormData();
-  //   // formData.append("image", myimage);
-  //   // for (const pair of formData.entries()) {
-  //   //   console.log(`${pair[0]}: ${pair[1]}`);
-  //   // }
-  //   const apiUrl = "http://localhost:8000/api/upload";
-  //   const options = {
-  //     headers: {
-  //       Authorization: `Bearer ${accesslocal}`,
-  //       "Content-Type": "application/json",
-  //     },
-  //   };
-  //   const body = {
-  //     image: imageSrc,
-  //   };
-  //   axios
-  //     .post(apiUrl, body, options)
-  //     .then((response) => {
-  //       console.log(` from the upload response  ${JSON.stringify(response.data)}`);
-  //     })
-  //     .catch((err) => {
-  //       console.log(`error from upload response catch ${JSON.stringify(err.response.data)}`);
-  //     });
-  // };
 
   useEffect(() => {
     const access = localStorage.getItem("access_token") || "";
@@ -97,7 +64,6 @@ export default function Home() {
         const modelURL = base + "/model.json";
         const metadataURL = base + "/metadata.json";
         const model = await tmImage.load(modelURL, metadataURL);
-        //  const model = await tmImage.load("/model/model.json");
 
         setMyModel(model);
         return model;
@@ -136,21 +102,14 @@ export default function Home() {
     webcamRef.current = webcamInstance;
     return webcamInstance;
   };
- function handlelogout(){
-  localStorage.removeItem("access_token");
-  return navigate("/login")
-  
-
- }
+  function handlelogout() {
+    localStorage.removeItem("access_token");
+    return navigate("/login");
+  }
   const startProcessing = () => {
     // Set a time interval for making predictions
     intervalIdRef.current = setInterval(() => {
       if (mymodel) {
-        // const imageSrc = webcamRef.current.getScreenshot();
-        // const img = new Image();
-        // img.src = imageSrc;
-
-        // console.log("web cam init ", webcamRef.current);
         predictImage()
           .then((data) => {
             console.log("predicted");
@@ -172,24 +131,7 @@ export default function Home() {
     setIsProcessing(false);
     setShowStartButton(true);
   };
-  // const capture = () => {
-  //   // console.log(myimage);
 
-  //   const imageSrc = webcamRef.current.getScreenshot();
-  //   // console.log("from capture", imageSrc.slice(0, 25));
-  //   // sendImageToBackend(imageSrc);
-  //   if (imageSrc) {
-  //     const img = new Image();
-  //     img.src = imageSrc;
-  //     img.onload = () => predictImage(img).then(()=>{
-  //       console.log()
-  //     }).catch((err)=>{
-  //       console.log(err)
-  //     });
-  //   }
-  // };
-
-  // console.log("out side useeffect ", mymodel)
   const predictImage = async (imageElement) => {
     try {
       // Check if the model is loaded
@@ -202,182 +144,96 @@ export default function Home() {
       canvas.height = video.height;
       const context = canvas.getContext("2d");
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      // const dataURL = canvas.toDataURL("image/png");
-      // //  img.src = dataURL;
-      // const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
       const tensor = tf.browser.fromPixels(canvas);
       const resizedTensor = tf.image.resizeBilinear(tensor, [224, 224]);
       const preprocessed = resizedTensor.expandDims(0); // Ensure correct dimensions
-      //  //  console.log(tensor)
 
-      // console.log(preprocessed)
       const predictions = await mymodel.model.predict(preprocessed).data();
       console.log(predictions[0], predictions[1]);
-      // Convert the image data to a data URL
+
       setmodelpredictions({
         with_helmet: predictions[0],
         without_helmet: predictions[1],
       });
-      // console.error("Model is not loaded.");
-      //  console.log(webcamRef.current.canvas.width)
-      // img.onload = () => {
-      // async function callme() {
-
-      //   setimgurl(dataURL);
-
-      //   return predictions;
-      // }
-
-      // callme(img)
-      //   .then((data) => {
-      //     console.log(data[0], data[1]);
-      //     setmodelpredictions({
-      //       without_helmet: data[0],
-      //       with_helmet: data[1],
-      //     });
-      //   })
-      //   .catch((err) => {
-      //     console.log(err);
-      //   });
-
-      // Rest of your code
-      // };
-      // const canvas = document.createElement("canvas");
-      // const context = canvas.getContext("2d");
-
-      // canvas.width = videoElement.videoWidth;
-      // canvas.height = videoElement.videoHeight;
-      // context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-      // console.log(canvas);
-
-      // Log the current state of mymodel
-      // console.log("mymodel state", mymodel);
-
-      // // Convert image to a TensorFlow tensor
-      //  const tensor = tf.browser.fromPixels(imageElement);
-      // // const resizedTensor = tf.image.resizeBilinear(tensor, [224, 224]);
-      // // // Preprocess the tensor (expand dimensions to match model input shape)
-      //  const preprocessed = resizedTensor.expandDims(0);
-
-      // // Make predictions
-      // const predictions = await mymodel.model.predict(preprocessed).data();
-      // setmodelpredictions({
-      //   with_helmet: predictions[0],
-      //   without_helmet: predictions[1],
-      // });
-
-      // const predictedClassIndex = tf.argMax(predictions).dataSync()[0];
-      // // Display or handle predictions as needed
-      // console.log("Predicted Class Index:", predictedClassIndex);
-
-      // Cleanup
-      // tensor.dispose();
-      // resizedTensor.dispose();
     } catch (error) {
       console.error("Error during prediction:", error);
     }
   };
 
-  // function callcapture() {
-  //   if (timer) {
-  //     setInterval(() => {
-  //       capture();
-  //     }, 2000);
+  return (
+    user && (
+      <div className="outer">
+        <div className="box_logout">
+          <Accordion defaultActiveKey="0">
+            <Card>
+              <Card.Header>
+                <Accordion.Header>{user.name}</Accordion.Header>
 
-  //   } else {
-
-  //     console.log("timer ended");
-  //   }
-
-  //   callcapture();
-  // }
-
-  return user && (
-    <div className="outer">
-      <div className="box_logout">
-      <Accordion defaultActiveKey="0">
-      <Card>
-         <Card.Header>
-         <Accordion.Header>{user.name}</Accordion.Header>
-            {/* Accordion Section 1 */}
-            {/* Clickable item within the header */}
-            <Accordion.Body>
-          <button onClick={handlelogout}  className="button2">logout</button>
-            </Accordion.Body>
-           
-          
-        </Card.Header>
-        {/* <Accordion.Collapse eventKey="0">
-          <Card.Body> */}
-            {/* Content of Accordion Section 1 */}
-            {/* Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          </Card.Body>
-        </Accordion.Collapse> */} 
-      </Card>
-
-      {/* Add more accordion sections as needed */}
-    </Accordion>
-        
-      </div>
-      <div className="innerbox">
-        {/* {user && <h3 style={{color:"#040D12"}}>Welcome {user.name}</h3>} */}
-        <div className="inner_video">
-          <Webcam
-            screenshotFormat="image/jpeg"
-            audio={false}
-            mirrored
-            width={720}
-            height={400}
-          />
-          {imgurl && <img src={imgurl} />}
+                <Accordion.Body>
+                  <button onClick={handlelogout} className="button2">
+                    logout
+                  </button>
+                </Accordion.Body>
+              </Card.Header>
+            </Card>
+          </Accordion>
         </div>
-        <div className="innerbox2">
-          {/* {    <div>
-            <input
-              type="file"
-              onChange={(e) => {
-                setmyimage(e.target.files[0]);
-              }}
-            />
-          </div>} */}
+        <div className="innerbox">
+          <div className="inner_video">
+            {!mymodel && (
+              <Spinner animation="border" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </Spinner>
+            )}{" "}
+            {mymodel && (
+              <Webcam
+                screenshotFormat="image/jpeg"
+                audio={false}
+                mirrored
+                width={720}
+                height={400}
+              />
+            )}
+          </div>
+          <div className="innerbox2">
+            {showStartButton && (
+              <button
+                className="button1"
+                onClick={startProcessing}
+                disabled={isProcessing}
+              >
+                Start
+              </button>
+            )}
 
-          {showStartButton && (
-            <button
-              className="button1"
-              onClick={startProcessing}
-              disabled={isProcessing}
-            >
-              Start
-            </button>
-          )}
+            {!showStartButton && (
+              <button
+                className="button1"
+                onClick={stopProcessing}
+                disabled={!isProcessing}
+              >
+                Stop
+              </button>
+            )}
 
-          {!showStartButton && (
-            <button
-              className="button1"
-              onClick={stopProcessing}
-              disabled={!isProcessing}
-            >
-              Stop
-            </button>
-          )}
-
-          <div className="innerbox2text">
-            <span className="innertext">
-              with helmet:
-              {modelpredictions.with_helmet.toFixed(5) >= 0.5
-                ? modelpredictions.with_helmet.toFixed(5)
-                : "NO"}
-            </span>
-            <span className="innertext">
-              without helmet:
-              {modelpredictions.with_helmet.toFixed(5) <= 0.5
-                ? modelpredictions.without_helmet.toFixed(5)
-                : "NO"}
-            </span>
+            <div className="innerbox2text">
+              <span className="innertext">
+                with helmet:
+                {modelpredictions.with_helmet.toFixed(5) >= 0.5
+                  ? modelpredictions.with_helmet.toFixed(5)
+                  : "NO"}
+              </span>
+              <span className="innertext">
+                without helmet:
+                {modelpredictions.with_helmet.toFixed(5) <= 0.5
+                  ? modelpredictions.without_helmet.toFixed(5)
+                  : "NO"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    )
   );
 }
