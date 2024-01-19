@@ -110,15 +110,23 @@ export default function Home() {
     // Set a time interval for making predictions
     intervalIdRef.current = setInterval(() => {
       if (mymodel) {
-        predictImage()
-          .then((data) => {
-            console.log("predicted");
-          })
-          .catch((err) => {
-            console.error("Error web cam init: ", err);
-          });
+        try {
+          window.requestAnimationFrame(predictImage);
+          
+        } catch (error) {
+          console.log(error)
+        }
+      
+        // predictImage()
+        //   .then((data) => {
+        //     console.log("predicted");
+            
+        //   })
+        //   .catch((err) => {
+        //     console.error("Error web cam init: ", err);
+        //   });
       }
-    }, 1000); // Adjust the interval time as needed
+    }, 2000); // Adjust the interval time as needed
 
     setIsProcessing(true);
     setShowStartButton(false);
@@ -156,6 +164,7 @@ export default function Home() {
         with_helmet: predictions[0],
         without_helmet: predictions[1],
       });
+     
     } catch (error) {
       console.error("Error during prediction:", error);
     }
