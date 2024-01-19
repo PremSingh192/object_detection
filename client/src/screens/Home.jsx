@@ -126,7 +126,7 @@ export default function Home() {
         //     console.error("Error web cam init: ", err);
         //   });
       }
-    }, 2000); // Adjust the interval time as needed
+    }, 1000); // Adjust the interval time as needed
 
     setIsProcessing(true);
     setShowStartButton(false);
@@ -200,7 +200,7 @@ export default function Home() {
                 screenshotFormat="image/jpeg"
                 audio={false}
                 mirrored
-                width={720}
+                width={600}
                 height={400}
               />
             )}
