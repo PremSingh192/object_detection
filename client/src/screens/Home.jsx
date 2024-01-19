@@ -112,15 +112,14 @@ export default function Home() {
       if (mymodel) {
         try {
           window.requestAnimationFrame(predictImage);
-          
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
-      
+
         // predictImage()
         //   .then((data) => {
         //     console.log("predicted");
-            
+
         //   })
         //   .catch((err) => {
         //     console.error("Error web cam init: ", err);
@@ -164,7 +163,6 @@ export default function Home() {
         with_helmet: predictions[0],
         without_helmet: predictions[1],
       });
-     
     } catch (error) {
       console.error("Error during prediction:", error);
     }
@@ -229,13 +227,13 @@ export default function Home() {
             <div className="innerbox2text">
               <span className="innertext">
                 with helmet:
-                {modelpredictions.with_helmet.toFixed(5) >= 0.5
+                {modelpredictions.with_helmet.toFixed(5) >= 0.51234
                   ? modelpredictions.with_helmet.toFixed(5)
                   : "NO"}
               </span>
               <span className="innertext">
                 without helmet:
-                {modelpredictions.with_helmet.toFixed(5) <= 0.5
+                {modelpredictions.with_helmet.toFixed(5) <= 0.51234
                   ? modelpredictions.without_helmet.toFixed(5)
                   : "NO"}
               </span>
