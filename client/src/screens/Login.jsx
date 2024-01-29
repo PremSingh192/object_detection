@@ -4,7 +4,6 @@ import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 
-
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
@@ -65,14 +64,15 @@ function Login() {
   }, []);
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const email = event.target[0].value;
+    const password = event.target[2].value;
 
-    if (data.get("email") == "" || data.get("password") == "") {
+    if (!email || !password) {
       alert("Enter Email and Password");
     } else {
       const send = {
-        email: data.get("email"),
-        password: data.get("password"),
+        email: email,
+        password: password,
       };
       axios
         .post("http://localhost:8000/api/user/login", send)
@@ -101,7 +101,7 @@ function Login() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage:`url(/assets/image1.png)`,
+            backgroundImage: `url(/assets/image1.png)`,
             backgroundRepeat: "no-repeat",
             backgroundColor: (t) =>
               t.palette.mode === "light"
@@ -111,7 +111,7 @@ function Login() {
             backgroundPosition: "center",
           }}
         />
-        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square >
           <Box
             sx={{
               my: 8,
