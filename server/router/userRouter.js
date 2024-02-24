@@ -57,7 +57,7 @@ userRouter.get("/", (req, res) => {
   res.json({ mesage: `connected to userRouter` });
 });
 
-userRouter.post(
+userRouter.get(
   "/seeduser",
   asyncHandler(async (req, res) => {
     console.log("inside seed user  ");

@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 //import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-
+import base_url from "../base_url";
 //import { defaultMethod } from 'react-router-dom/dist/dom';
 // function Copyright(props) {
 //   return (
@@ -43,7 +43,7 @@ function Login() {
     const access = localStorage.getItem("access_token") || "";
 
     if (access != "") {
-      const apiUrl = "http://localhost:8000/api/user/isAuth";
+      const apiUrl = base_url + "/api/user/isAuth";
       const send = {
         headers: {
           Authorization: `Bearer ${access}`,
@@ -75,7 +75,7 @@ function Login() {
         password: password,
       };
       axios
-        .post("http://localhost:8000/api/user/login", send)
+        .post(base_url + "/api/user/login", send)
         .then((res) => {
           localStorage.setItem("access_token", res.data.access);
           navigate("/");
@@ -111,7 +111,7 @@ function Login() {
             backgroundPosition: "center",
           }}
         />
-        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square >
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
           <Box
             sx={{
               my: 8,
