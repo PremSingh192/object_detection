@@ -8,6 +8,7 @@ import * as tf from "@tensorflow/tfjs";
 import * as tmImage from "@teachablemachine/image";
 import axios from "axios";
 import Webcam from "react-webcam";
+import base_url from "../base_url";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -35,8 +36,8 @@ export default function Home() {
   useEffect(() => {
     const access = localStorage.getItem("access_token") || "";
 
-    if (!access == "") {
-      const apiUrl = "http://localhost:8000/api/user/isAuth";
+    if (access != "") {
+      const apiUrl = base_url + "/api/user/isAuth";
       const send = {
         headers: {
           Authorization: `Bearer ${access}`,
@@ -60,9 +61,10 @@ export default function Home() {
 
     const loadModel = async () => {
       try {
-        const base = process.env.REACT_APP_MODEL_URL;
-        const modelURL = base + "/model.json";
-        const metadataURL = base + "/metadata.json";
+        const modelURL =
+          "https://teachablemachine.withgoogle.com/models/aMUNROmRD/model.json";
+        const metadataURL =
+          "https://teachablemachine.withgoogle.com/models/aMUNROmRD/metadata.json";
         const model = await tmImage.load(modelURL, metadataURL);
 
         setMyModel(model);
